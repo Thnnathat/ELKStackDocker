@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  Elasticsearch:
+    image: elasticsearch:8.6.2
+    container_name: elasticsearch
+    volumes:
+    # - ./elasticsearch-plugins.yml:/usr/share/elasticsearch/config/elasticsearch-plugins.yml
+    - ./elastic_data/:/usr/share/elasticsearch/data/
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      discovery.type: single-node
+      xpack.security.enabled: false
+    ports:
+    - '9200:9200'
+    networks:
+      - elk
+
+  Logstash:
+    image: logstash:8.6.2
+    container_name: logstash
+    volumes:
+      - ./logstash/data:/usr/share/logstash/data
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/input:/usr/share/logstash/input
+      - ./logstash/output:/usr/share/logstash/output
+      - ./logstash/patterns:/usr/share/logstash/patterns
+
+    depends_on:
+      - Elasticsearch
+    ports:
+    - '8081:8081'
+    - '8082:8082'
+
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      config.reload.automatic: true
+    networks:
+      - elk
+    links:
+      - Elasticsearch
+
+  Kibana:
+    image: kibana:8.6.2
+    container_name: kibana 
+    ports:
+    - '5601:5601'
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200  
+    depends_on:
+      - Elasticsearch  
+    networks:
+      - elk
+
+networks:
+  elk:
+    driver: bridge
