@@ -4,7 +4,6 @@ services:
     image: elasticsearch:8.6.2
     container_name: elasticsearch
     volumes:
-    # - ./elasticsearch-plugins.yml:/usr/share/elasticsearch/config/elasticsearch-plugins.yml
     - ./elastic_data/:/usr/share/elasticsearch/data/
     environment:
       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
